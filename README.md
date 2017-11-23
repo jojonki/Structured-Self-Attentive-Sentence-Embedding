@@ -26,3 +26,7 @@ Before you start to train the model, you need to download each dataset. Currentl
 ```
 $ python main.py
 ```
+
+## limitations
+
+There may be stil some bugs, pull requests will be appreciated.
