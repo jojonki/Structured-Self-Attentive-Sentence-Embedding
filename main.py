@@ -41,6 +41,7 @@ def test(model, data, batch_size):
     correct = 0
     count = 0
     losses = []
+    penals = []
     for i in range(0, len(data)-batch_size, batch_size): # TODO use last elms
         batch = data[i:i+batch_size]
         x = [d[0] for d in batch]
@@ -53,14 +54,16 @@ def test(model, data, batch_size):
         if use_penalization:
             attentions_T = attentions.transpose(2, 1).contiguous() # (bs, n, r)
             extra_loss = frobenius(torch.bmm(attentions, attentions_T) - I) # (bs, n)
+            penals.append(extra_loss)
             loss = loss + penalization_coeff * extra_loss
-        print(loss.data[0])
+
         losses.append(loss.data[0])
         _, pred_ids = torch.max(preds, 1)
         correct += torch.sum(pred_ids == labels).data[0]
         count += batch_size
-    print('Averate Loss:', sum(losses)/count)
-    print('Accuracy:', correct/count)
+    print('Loss:', sum(losses) / count)
+    print('Penalty:', sum(penals) / count)
+    print('Accuracy:', correct / count)
 
 
 def train(model, data, optimizer, n_epoch, batch_size, dev_data=None):
