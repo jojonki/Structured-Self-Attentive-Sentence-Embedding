@@ -1,6 +1,7 @@
 import random
 import torch
 import torch.nn as nn
+from tqdm import tqdm
 from utils import load_task, make_word_vector, to_var, load_glove_weights, frobenius
 from utils import save_pickle, load_pickle
 from models import SelfAttentiveNet
@@ -24,7 +25,7 @@ train_data = data[:split_id]
 dev_data = data[split_id:]
 
 n_epoch = 4
-batch_size = 64
+batch_size = 32
 embd_size = 100
 attn_hops = 60
 
@@ -54,13 +55,14 @@ def test(model, data, batch_size):
         if use_penalization:
             attentions_T = attentions.transpose(2, 1).contiguous() # (bs, n, r)
             extra_loss = frobenius(torch.bmm(attentions, attentions_T) - I) # (bs, n)
-            penals.append(extra_loss)
+            penals.append(extra_loss.data[0])
             loss = loss + penalization_coeff * extra_loss
 
         losses.append(loss.data[0])
         _, pred_ids = torch.max(preds, 1)
         correct += torch.sum(pred_ids == labels).data[0]
         count += batch_size
+    print('----Test Result---')
     print('Loss:', sum(losses) / count)
     print('Penalty:', sum(penals) / count)
     print('Accuracy:', correct / count)
@@ -71,7 +73,7 @@ def train(model, data, optimizer, n_epoch, batch_size, dev_data=None):
     for epoch in range(1, n_epoch+1):
         print('---Epoch {}'.format(epoch))
         random.shuffle(data)
-        for i in range(0, len(data)-batch_size, batch_size): # TODO use last elms
+        for i in tqdm(range(0, len(data)-batch_size, batch_size)): # TODO use last elms
             batch = data[i:i+batch_size]
             x = [d[0] for d in batch]
             sent_len = max([len(xx) for xx in x])
