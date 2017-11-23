@@ -29,4 +29,5 @@ $ python main.py
 
 ## limitations
 
-There may be stil some bugs, pull requests will be appreciated.
+- Impl Penalization term
+- There may be stil some bugs, pull requests will be appreciated.
