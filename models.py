@@ -19,7 +19,6 @@ class WordEmbedding(nn.Module):
         return F.relu(self.embedding(x))
 
 
-# TODO Impl penalization term
 class SelfAttentiveNet(nn.Module):
     def __init__(self,
                  vocab_size,
