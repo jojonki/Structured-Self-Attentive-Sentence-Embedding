@@ -1,2 +1,4 @@
-./dataset/*
+dataset/
 .DS_Store
+*.pickle
+__pycache__

@@ -5,6 +5,7 @@ import json
 from nltk.tokenize import word_tokenize
 import torch
 from torch.autograd import Variable
+from tqdm import tqdm
 
 
 def to_var(x):
@@ -31,6 +32,7 @@ def lower_list(word_list):
 
 def load_task(dataset_path, N=500*1000+2000): # see 4.2
     data = []
+    pbar = tqdm(total=N)
     with open(dataset_path) as f:
         for i, d in enumerate(f):
             if i >= N:
@@ -39,6 +41,7 @@ def load_task(dataset_path, N=500*1000+2000): # see 4.2
             text = lower_list(word_tokenize(d['text']))
             stars = d['stars'] - 1 # map to [0, 4] from [1, 5]
             data.append((text, stars))
+            pbar.update(1)
     return data
 
 
@@ -85,3 +88,13 @@ def make_word_vector(data, w2i, query_len):
         vec_data.append(index_vec)
 
     return to_var(torch.LongTensor(vec_data))
+
+
+def frobenius(matrix):
+    # matrix: (bs, r, r)
+    bs = matrix.size(0)
+    ret = torch.sum((matrix ** 2), 1) # (bs, r)
+    ret = torch.sum(ret, 1).squeeze() + 1e-10 # #(bs,), support underflow
+    ret = ret ** 0.5
+    ret = torch.sum(ret) / bs
+    return ret

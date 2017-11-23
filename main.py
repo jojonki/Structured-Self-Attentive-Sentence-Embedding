@@ -1,10 +1,14 @@
 import random
 import torch
 import torch.nn as nn
-from utils import load_task, make_word_vector, to_var, load_glove_weights
+from utils import load_task, make_word_vector, to_var, load_glove_weights, frobenius
+from utils import save_pickle, load_pickle
 from models import SelfAttentiveNet
 
 data = load_task('./dataset/review.json')
+# data = load_pickle('data.pickle')
+# save_pickle(data, 'data.pickle')
+
 vocab = set()
 for review, _ in data:
     vocab |= set(review)
@@ -19,9 +23,14 @@ split_id = len(data) - n_dev
 train_data = data[:split_id]
 dev_data = data[split_id:]
 
-embd_size = 100
-batch_size = 64
 n_epoch = 4
+batch_size = 64
+embd_size = 100
+attn_hops = 60
+
+use_penalization = True
+penalization_coeff = 1.0
+I = to_var(torch.zeros(batch_size, attn_hops, attn_hops))
 
 # pre_embd = None
 pre_embd = torch.from_numpy(load_glove_weights('./dataset', embd_size, len(vocab), w2i)).type(torch.FloatTensor)
@@ -39,8 +48,12 @@ def test(model, data, batch_size):
         x = make_word_vector(x, w2i, sent_len) # (bs, n)
         labels = to_var(torch.LongTensor([d[1] for d in batch])) # (bs,)
 
-        preds, attentions = model(x) # (bs, n_classes)
+        preds, attentions = model(x) # (bs, n_classes), (bs, r, n)
         loss = loss_fn(preds, labels)
+        if use_penalization:
+            attentions_T = attentions.transpose(2, 1).contiguous() # (bs, n, r)
+            extra_loss = frobenius(torch.bmm(attentions, attentions_T) - I) # (bs, n)
+            loss = loss + penalization_coeff * extra_loss
         print(loss.data[0])
         losses.append(loss.data[0])
         _, pred_ids = torch.max(preds, 1)
@@ -75,7 +88,7 @@ def train(model, data, optimizer, n_epoch, batch_size, dev_data=None):
         model.train()
 
 
-model = SelfAttentiveNet(len(vocab), pre_embd)
+model = SelfAttentiveNet(len(vocab), pre_embd, embd_size=embd_size, attn_hops=attn_hops)
 if torch.cuda.is_available():
     model.cuda()
 

@@ -12,6 +12,7 @@ This repo contains the implementation of this paper in PyTorch.
 - Python 3.x
 - PyTorch 0.2.0.3
 - nltk, for word tokenizer
+- tqdm, for Progress bar
 
 ## Dataset
 Before you start to train the model, you need to download each dataset. Currently I only check Yelp dataset, no other two tasks in the paper.
@@ -29,5 +30,4 @@ $ python main.py
 
 ## limitations
 
-- Impl Penalization term
 - There may be stil some bugs, pull requests will be appreciated.

@@ -26,14 +26,14 @@ class SelfAttentiveNet(nn.Module):
                  pre_embd=None,
                  embd_size=100,
                  hidden_size=100,
-                 row=30,
+                 attn_hops=30,
                  mlp_d=350,
                  mlp_hidden=512,
                  n_classes=5):
         super(SelfAttentiveNet, self).__init__()
         self.embd_size   = embd_size
         self.hidden_size = hidden_size # u
-        r = row
+        r = attn_hops
         d = mlp_d
 
         self.word_emb   = WordEmbedding(vocab_size, embd_size, pre_embd)
