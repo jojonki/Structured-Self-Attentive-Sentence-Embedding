@@ -25,6 +25,10 @@ def load_pickle(path):
         return pickle.load(f)
 
 
+def lower_list(word_list):
+    return [w.lower() for w in word_list]
+
+
 def load_task(dataset_path, N=10000):
     data = []
     with open(dataset_path) as f:
@@ -32,7 +36,7 @@ def load_task(dataset_path, N=10000):
             if i >= N:
                 break
             d = json.loads(d)
-            text = word_tokenize(d['text'])
+            text = lower_list(word_tokenize(d['text']))
             stars = d['stars'] - 1 # map to [0, 4] from [1, 5]
             data.append((text, stars))
     return data
