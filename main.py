@@ -43,6 +43,9 @@ def train(model, data, optimizer, n_epoch, batch_size):
 
 
 model = SelfAttentiveNet(len(vocab), pre_embd)
+if torch.cuda.is_available():
+    model.cuda()
+
 loss_fn = loss_fn = nn.NLLLoss()
 optimizer = torch.optim.Adagrad(filter(lambda p: p.requires_grad, model.parameters()), lr=0.01)
 
