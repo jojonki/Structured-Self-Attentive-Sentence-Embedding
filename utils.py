@@ -29,7 +29,7 @@ def lower_list(word_list):
     return [w.lower() for w in word_list]
 
 
-def load_task(dataset_path, N=10000):
+def load_task(dataset_path, N=50*1000):
     data = []
     with open(dataset_path) as f:
         for i, d in enumerate(f):

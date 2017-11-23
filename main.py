@@ -16,7 +16,7 @@ i2w = dict((i, w) for i, w in enumerate(vocab, 0))
 print('vocab size', len(vocab))
 
 embd_size = 100
-batch_size = 16
+batch_size = 64
 n_epoch = 4
 
 pre_embd = torch.from_numpy(load_glove_weights('./dataset', embd_size, len(vocab), w2i)).type(torch.FloatTensor)
@@ -24,7 +24,7 @@ pre_embd = torch.from_numpy(load_glove_weights('./dataset', embd_size, len(vocab
 
 
 def train(model, data, optimizer, n_epoch, batch_size):
-    for epoch in range(n_epoch):
+    for epoch in range(1, n_epoch+1):
         print('---Epoch {}'.format(epoch))
         random.shuffle(data)
         for i in range(0, len(data)-batch_size, batch_size): # TODO use last elms
@@ -36,7 +36,8 @@ def train(model, data, optimizer, n_epoch, batch_size):
 
             preds, attentions = model(x) # (bs, n_classes)
             loss = loss_fn(preds, labels)
-            print(loss.data[0])
+            if i % (batch_size * 10) == 0:
+                print('Epoch', epoch, ', Loss', loss.data[0])
             model.zero_grad()
             loss.backward()
             optimizer.step()
