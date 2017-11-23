@@ -31,7 +31,11 @@ attn_hops = 60
 
 use_penalization = True
 penalization_coeff = 1.0
-I = to_var(torch.zeros(batch_size, attn_hops, attn_hops))
+I = torch.zeros(batch_size, attn_hops, attn_hops)
+for i in range(batch_size):
+    for j in range(attn_hops):
+        I[i, j, j] = 1
+I = to_var(I)
 
 # pre_embd = None
 pre_embd = torch.from_numpy(load_glove_weights('./dataset', embd_size, len(vocab), w2i)).type(torch.FloatTensor)
