@@ -19,7 +19,7 @@ class WordEmbedding(nn.Module):
         return F.relu(self.embedding(x))
 
 
-# TODO Peneralization
+# TODO Impl penalization term
 class SelfAttentiveNet(nn.Module):
     def __init__(self,
                  vocab_size,
@@ -28,6 +28,7 @@ class SelfAttentiveNet(nn.Module):
                  hidden_size=100,
                  row=30,
                  mlp_d=350,
+                 mlp_hidden=512,
                  n_classes=5):
         super(SelfAttentiveNet, self).__init__()
         self.embd_size   = embd_size
@@ -40,7 +41,8 @@ class SelfAttentiveNet(nn.Module):
                                  self.hidden_size,
                                  batch_first=True,
                                  bidirectional=True)
-        self.last_layer = nn.Linear(r*2*self.hidden_size, n_classes)
+        self.fc1 = nn.Linear(r*2*self.hidden_size, mlp_hidden)
+        self.fc2 = nn.Linear(mlp_hidden, n_classes)
 
         initrange = 0.1
         self.Ws1 = nn.Parameter(torch.Tensor(1, d, 2*hidden_size).uniform_(-initrange, initrange))
@@ -61,7 +63,7 @@ class SelfAttentiveNet(nn.Module):
 
         M    = torch.bmm(A, H) # (bs, r, 2u)
 
-        out = self.last_layer(M.view(bs, -1)) # (bs, n_classes)
-        out = F.log_softmax(out)
+        out = F.relu(self.fc1(M.view(bs, -1))) # (bs, mlp_hidden)
+        out = F.log_softmax(self.fc2(out)) # (bs, mlp_hidden)
 
         return out, A
